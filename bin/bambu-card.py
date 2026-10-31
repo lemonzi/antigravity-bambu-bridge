@@ -73,7 +73,7 @@ def generate_bambu_card(model_path: str, artifact_dir: str, preview_img: str = N
                 with open(found_img, 'rb') as f:
                     b64_img = base64.b64encode(f.read()).decode('utf-8')
 
-    img_tag = f'<img src="data:image/png;base64,{b64_img}" alt="Preview" class="w-full h-auto max-h-56 object-contain p-1" />' if b64_img else '<div class="text-xs text-[var(--muted-foreground)] p-8 text-center">No preview available</div>'
+    img_tag = f'<img src="data:image/png;base64,{b64_img}" alt="Preview" class="max-h-60 max-w-full h-auto w-auto object-contain mx-auto" />' if b64_img else '<div class="text-xs text-[var(--muted-foreground)] p-8 text-center">No preview available</div>'
 
     html_content = f'''<!DOCTYPE html>
 <html>
@@ -103,8 +103,8 @@ def generate_bambu_card(model_path: str, artifact_dir: str, preview_img: str = N
       </button>
     </div>
 
-    <!-- Preview Below (large, full-width) -->
-    <div class="relative rounded-lg overflow-hidden border border-[var(--border)] bg-black/40 flex items-center justify-center max-h-56">
+    <!-- Preview Below (natural aspect ratio, centered) -->
+    <div class="relative rounded-lg overflow-hidden border border-[var(--border)] bg-black/40 flex items-center justify-center">
       {img_tag}
     </div>
 
