@@ -1,0 +1,11 @@
+{
+  "name": "bambu-bridge",
+  "displayName": "Bambu Studio 3D Bridge & GenUI Slicer Handoff",
+  "description": "Zero-token 1-click Bambu Studio launcher and responsive GenUI cards for STL and 3MF models in Antigravity.",
+  "version": "1.0.0",
+  "suggestedPrompts": [
+    "Open the 3D model in Bambu Studio",
+    "Show me the Bambu Studio print plate preview",
+    "Package the parts into a single combined 3MF"
+  ]
+}
