@@ -43,17 +43,38 @@ def generate_bambu_card(model_path: str, artifact_dir: str, preview_img: str = N
         except Exception:
             pass
 
-    # 2. Locate or convert thumbnail for STL
+    # 2. Locate or convert thumbnail for STL / 3MF fallback
     if not b64_img:
         candidate_paths = []
         if preview_img and os.path.exists(preview_img):
             candidate_paths.append(preview_img)
 
-        base_no_ext = os.path.splitext(model_path)[0]
+        base_no_ext = os.path.splitext(file_name)[0]
+        dir_path = os.path.dirname(model_path)
+
+        # Direct name matches
         candidate_paths.extend([
-            f"{base_no_ext}_preview.png",
-            f"{base_no_ext}.png",
-            os.path.join(os.path.dirname(model_path), "preview.png")
+            os.path.join(dir_path, f"{base_no_ext}_preview.png"),
+            os.path.join(dir_path, f"{base_no_ext}_render.png"),
+            os.path.join(dir_path, f"{base_no_ext}_plate_render.png"),
+            os.path.join(dir_path, f"{base_no_ext}.png"),
+        ])
+
+        # Version/prefix matching in adjacent directory (e.g. v24 matches v24_kit_plate_render.png)
+        if os.path.isdir(dir_path):
+            prefix = base_no_ext.split('_')[0] if '_' in base_no_ext else base_no_ext
+            try:
+                for f in sorted(os.listdir(dir_path)):
+                    if f.endswith('.png') and ('plate' in f or 'preview' in f or 'render' in f):
+                        if prefix in f:
+                            candidate_paths.append(os.path.join(dir_path, f))
+            except Exception:
+                pass
+
+        # Generic fallbacks
+        candidate_paths.extend([
+            os.path.join(dir_path, "plate_render.png"),
+            os.path.join(dir_path, "preview.png")
         ])
 
         found_img = None
@@ -65,7 +86,7 @@ def generate_bambu_card(model_path: str, artifact_dir: str, preview_img: str = N
         if found_img:
             tmp_thumb = f"/tmp/thumb_{os.getpid()}.png"
             try:
-                subprocess.run(['sips', '-Z', '400', found_img, '--out', tmp_thumb], check=True, capture_output=True)
+                subprocess.run(['sips', '-Z', '500', found_img, '--out', tmp_thumb], check=True, capture_output=True)
                 with open(tmp_thumb, 'rb') as f:
                     b64_img = base64.b64encode(f.read()).decode('utf-8')
                 os.remove(tmp_thumb)
@@ -167,9 +188,11 @@ def generate_bambu_card(model_path: str, artifact_dir: str, preview_img: str = N
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print("Usage: bambu-card.py <model_path> <artifact_dir> [preview_img]")
+        print("Note: <artifact_dir> is the conversation's active artifact directory path.")
         sys.exit(1)
     model = sys.argv[1]
     art_dir = sys.argv[2]
     prev = sys.argv[3] if len(sys.argv) > 3 else None
     card_path = generate_bambu_card(model, art_dir, prev)
     print(card_path)
+    print(f'<agent-embed src="file://{card_path}"></agent-embed>')

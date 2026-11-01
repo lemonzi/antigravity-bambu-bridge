@@ -52,7 +52,7 @@ cd antigravity-bambu-bridge
 ```text
 [ Antigravity Chat / Side Pane ]
        │
-       │  <agent-embed src="bambu_card.html">
+       │  <agent-embed src="file:///absolute/path/to/artifacts/bambu_card.html"></agent-embed>
        ▼
 ┌────────────────────────────────────────────────────────┐
 │  Responsive GenUI Card                                 │
@@ -71,6 +71,31 @@ cd antigravity-bambu-bridge
                             │ LaunchServices / xdg-open
                             ▼
               [ Bambu Studio / OrcaSlicer ]
+```
+
+---
+
+## 💡 Troubleshooting & Best Practices
+
+### 1. Antigravity `<agent-embed>` Syntax
+In Antigravity, relative file paths inside `<agent-embed>` fail with an "invalid embed" error. You must always use an absolute path with the `file:///` scheme (three slashes):
+```html
+<!-- Correct -->
+<agent-embed src="file:///Users/.../brain/<conversation-id>/bambu_model.html"></agent-embed>
+
+<!-- Incorrect (will fail) -->
+<agent-embed src="bambu_model.html"></agent-embed>
+```
+`bambu-card.py` automatically prints the exact embed tag to stdout so you or your AI agent can copy-paste it directly.
+
+### 2. Preventing Distorted 3D Previews (Matplotlib Aspect Ratio)
+When generating 3D isometric plate previews using Matplotlib (`Axes3D`), Matplotlib defaults to projecting coordinates onto a 1:1:1 unit cube. For wide or shallow parts (e.g. 200 mm wide but 20 mm high), this stretches the vertical Z-axis by $10\times$, distorting circular collars into tall, squished ovals.
+Always specify true bounding-box aspect ratio:
+```python
+dx = max_x - min_x
+dy = max_y - min_y
+dz = max_z - min_z
+ax.set_box_aspect((dx, dy, dz))
 ```
 
 ---
